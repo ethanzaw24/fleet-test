@@ -1,0 +1,123 @@
+ecp-endpoint:
+  enabled: true
+  instance:
+    - name: ep1
+      image:
+        name: harbor.kyln.tech/entsoe/ecp-endpoint
+        tag: 4.15.0.2128
+      replicaCount: 1
+      resourcesK8s:
+        requests:
+          cpu: 500m
+          ephemeralStorage: 256Mi
+          memory: 2Gi
+        limits:
+          cpu: 1000m
+          memory: 5Gi
+      storageData: 1Gi
+      storageLogs: 5Gi
+      keepLogsAfterRestart: true
+      livenessProbe: false
+      readinessProbe: true
+      service:
+        type: NodePort
+        https:
+          port: 8443
+          nodePort: 30100
+      ingress:
+        enabled: false
+      ecpProperties:
+        springProfilesActive: ecp-nonha
+        dataDirectory: /var/lib/ecp-endpoint
+        ecpKeystoreLocation: /var/lib/ecp-endpoint/keystore.jks
+        ecpKeystorePassword: password
+        ecpAuthKeystoreLocation: /var/lib/ecp-endpoint/authKeystore.jks
+        ecpAuthKeystorePassword: password
+        internalBrokerHost: vattenfall-eccosp-artemis-artemis-eptb1-svc
+        internalBrokerAmqpPort: 5672
+        internalBrokerUseAuthentication: true
+        internalBrokerAuthUser: endpoint
+        internalBrokerAuthPassword: password
+        internalBrokerKeystoreLocation: ${dataDirectory}/authKeystore.jks
+        internalBrokerKeystorePassword: password
+        internalBrokerKeystoreAuthAlias: ecp_module_auth
+        internalBrokerUrls: amqps://vattenfall-eccosp-artemis-artemis-eptb1-svc:5672
+        loggingFileName: /var/log/ecp-endpoint/ecp.log
+        loggingFilePath: /var/log/ecp-endpoint
+        loggingConfig: /etc/ecp-endpoint/ecp-logback.xml
+        loggingLevelOrgApacheQpid: WARN
+        springJmxEnabled: false
+        serverErrorWhiteLabelEnabled: false
+        ecpDBKeystorePassword: password
+        ecpEndpointAmqpApiEnabled: true
+        ecpEndpointAmqpApiSendHandlerEnabled: true
+        sendHandlerBeanName: amqpApiSendHandler
+        sendHandlertypeName: "*"
+        ecpNatEnabled: false
+        ecpSecurityProxyEnabled: false
+        ecpCsrfSecret: P9CkNis9r5Pn00RFZwN9oZgi
+      envConf:
+        resourcesJvm:
+          xms: 2G
+          xmx: 4G
+      ecpUsersProperties:
+        ecpEndpointUsers:
+          - login: admin
+            password: password
+            role: admin
+          - login: tester
+            password: passwordtester
+            role: user
+      volumeMounts:
+        - name: config
+          subPath: bootstrap.xml
+          mountPath: /etc/ecp-endpoint/jms/ssl-jks/bootstrap.xml
+      configMap:
+        - subPath: bootstrap.xml
+          content: |-
+           <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+           <!--
+             ~ Licensed to the Apache Software Foundation (ASF) under one or more
+             ~ contributor license agreements. See the NOTICE file distributed with
+             ~ this work for additional information regarding copyright ownership.
+             ~ The ASF licenses this file to You under the Apache License, Version 2.0
+             ~ (the "License"); you may not use this file except in compliance with
+             ~ the License. You may obtain a copy of the License at
+             ~
+             ~     http://www.apache.org/licenses/LICENSE-2.0
+             ~
+             ~ Unless required by applicable law or agreed to in writing, software
+             ~ distributed under the License is distributed on an "AS IS" BASIS,
+             ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+             ~ See the License for the specific language governing permissions and
+             ~ limitations under the License.
+             -->
+
+           <broker xmlns="http://activemq.apache.org/schema">
+
+              <jaas-security domain="activemq"/>
+
+              <!-- artemis.URI.instance is parsed from artemis.instance by the CLI startup.
+                   This is to avoid situations where you could have spaces or special characters on this URI -->
+              <server configuration="file:/opt/eccosp-artemis/etc/broker.xml"/>
+
+              <!-- The web server is only bound to localhost by default -->
+              <web path="web" rootRedirectLocation="console">
+                  <binding name="artemis" uri="http://localhost:8161">
+                      <app name="branding" url="activemq-branding" war="activemq-branding.war"/>
+                      <app name="plugin" url="artemis-plugin" war="artemis-plugin.war"/>
+                      <app name="console" url="console" war="console.war"/>
+                      <app url="metrics" war="metrics.war"/>
+                  </binding>
+              </web>
+           </broker>
+
+global:
+  storage:
+    class: longhorn
+  imagePullSecrets:
+    - name: regcred
+  imageBusybox:
+    name: busybox
+  imagePostgresClient:
+    name: postgres-client
