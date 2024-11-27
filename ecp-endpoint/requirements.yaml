@@ -1,6 +1,0 @@
-dependencies:
-
-- name: ecp-endpoint
-  version: 4.15.0
-  chart: https://raw.githubusercontent.com/MistyFX/fleet/refs/heads/main/ecp-endpoint-4.15.0.tgz
-  condition: ecp-endpoint.enabled
