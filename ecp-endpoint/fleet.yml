@@ -1,4 +1,4 @@
-namespace: dudekjar
+namespace: default
 helm:
   releaseName: ecp-endpoint
   chart: ecp-endpoint
