@@ -4,5 +4,3 @@ helm:
   chart: ecp-endpoint
   repo: https://raw.githubusercontent.com/MistyFX/fleet/refs/heads/main/
   version: 4.15.0
-  valuesFiles:
-    - values.yaml
