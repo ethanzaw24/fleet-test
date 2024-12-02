@@ -1,8 +1,8 @@
 namespace: dudekjar
-
-dependencies:
-
-- name: ecp-endpoint
+helm:
+  releaseName: ecp-endpoint
+  chart: ecp-endpoint
+  repo: https://raw.githubusercontent.com/MistyFX/fleet/refs/heads/main/
   version: 4.15.0
-  repository: https://raw.githubusercontent.com/MistyFX/fleet/refs/heads/main/ecp-endpoint-4.15.0.tgz
-  condition: ecp-endpoint.enabled
+  valuesFiles:
+    - values.yaml
