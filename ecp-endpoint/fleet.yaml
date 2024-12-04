@@ -1,4 +1,4 @@
-namespace: default
+namespace: dudekjar
 helm:
   releaseName: ecp-endpoint
   chart: https://raw.githubusercontent.com/MistyFX/fleet/refs/heads/main/ecp-endpoint-4.15.0.tgz
